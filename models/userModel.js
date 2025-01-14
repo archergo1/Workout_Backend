@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const validator = require("validator");
+
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -15,7 +17,20 @@ const userSchema = new Schema({
 });
 
 userSchema.statics.signup = async function (email, password) {
-  // 要注意不要在箭頭函式內使用this
+  // validation
+  if (!email || !password) {
+    throw Error("All fields must be filled");
+  }
+
+  if (!validator.isEmail(email)) {
+    throw Error("Email is not valid");
+  }
+
+  if (!validator.isStrongPassword(password)) {
+    throw Error("Password not strong enough");
+  }
+
+  // 要注意不要在箭頭函式內使用this  因為指向的東西會不如預期
   const exists = await this.findOne({ email });
   if (exists) {
     throw Error("Email already in use");
@@ -24,6 +39,7 @@ userSchema.statics.signup = async function (email, password) {
   const salt = await bcrypt.genSalt(10);
   const hash = await bcrypt.hash(password, salt);
   console.log("salt", salt);
+  console.log("this", this);
   const user = await this.create({ email, password: hash });
 
   return user;
