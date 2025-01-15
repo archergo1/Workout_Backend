@@ -45,4 +45,24 @@ userSchema.statics.signup = async function (email, password) {
   return user;
 };
 
+// static login method
+userSchema.statics.login = async function (email, password) {
+  if (!email || !password) {
+    throw Error("All fields must be filled");
+  }
+
+  const user = await this.findOne({ email });
+  if (!user) {
+    throw Error("Incorrect email");
+  }
+  // 比對輸入的密碼和在資料庫中經過雜湊的密碼
+  const match = await bcrypt.compare(password, user.password);
+
+  if (!match) {
+    throw Error("Incorrect password");
+  }
+
+  return user;
+};
+
 module.exports = mongoose.model("User", userSchema);
