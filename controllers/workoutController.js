@@ -1,13 +1,14 @@
 const Workout = require("../models/workoutModel");
 const mongoose = require("mongoose");
 
-// get all workouts
+// GET ALL WORKOUTS
 const getWorkouts = async (req, res) => {
-  const workouts = await Workout.find({}).sort({ createdAt: -1 });
-
+  const user_id = req.user._id;
+  const workouts = await Workout.find({ user_id }).sort({ createdAt: -1 });
   res.status(200).json(workouts);
 };
-// get a single workout
+
+// GET A SINGLE WORKOUT
 const getWorkout = async (req, res) => {
   const { id } = req.params;
 
@@ -22,7 +23,7 @@ const getWorkout = async (req, res) => {
   }
   res.status(200).json(workout);
 };
-// create new workout
+// CREATE A NEW WORKOUT
 const createWorkout = async (req, res) => {
   const { title, load, reps } = req.body;
 
@@ -44,17 +45,18 @@ const createWorkout = async (req, res) => {
   }
 
   try {
+    const user_id = req.user._id;
+    console.log("user_id", user_id);
     // 利用 Workout 這個model 來創建一筆新的資料
-    const workout = await Workout.create({ title, load, reps });
+    const workout = await Workout.create({ title, load, reps, user_id });
     // 這裡要加上 return ，避免出現Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
     return res.status(200).json(workout);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-
-  res.json({ message: "POST A SINGLE WORKOUT" });
 };
-// delete a workout
+
+// DELETE A WORKOUT
 const deleteWorkout = async (req, res) => {
   const { id } = req.params;
 
@@ -70,7 +72,7 @@ const deleteWorkout = async (req, res) => {
   res.status(200).json(workout);
 };
 
-// update a workout
+// UPDATE A WORKOUT
 const updateWorkout = async (req, res) => {
   const { id } = req.params;
 
